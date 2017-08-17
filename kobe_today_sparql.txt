@@ -1,0 +1,27 @@
+PREFIX ic: <http://imi.go.jp/ns/core/rdf#>
+PREFIX schema: <http://schema.org/> 
+select distinct ?name concat(?desc2,"<BR>",?desc1, ?url2) as ?description ?pic_url ?thumb_url ?lon ?lat where{
+	select distinct ?name group_concat(?date_list ; separator='<BR>') as ?desc2 ?desc1 ?url2 ?pic_url ?thumb_url ?lon ?lat  where {
+		?s a ic:イベント型.
+		?s ic:名称/ic:表記 ?name1 .
+		?s ic:説明 ?desc1 .
+		?s ic:期間 [ ic:開始日 ?datef; ic:終了日 ?datet; ic:開始時間 ?timef; ic:終了時間 ?timet  ] .
+		?s schema:url ?url .
+		?s schema:image ?pic_url .
+		?s schema:inLanguage ?lang .
+		?s geo:long ?lon .
+		?s geo:lat ?lat .
+		FILTER (xsd:date(?datef) <= xsd:date(now()) && xsd:date(now()) <= xsd:date(?datet)) .
+		FILTER (?lang = "日本語") .
+		BIND(concat(month(xsd:dateTime(?datet)), "/", day(xsd:dateTime(?datet))) as ?datet2) .
+		BIND(concat(month(xsd:dateTime(?datef)), "/", day(xsd:dateTime(?datef))) as ?datef2) .
+		BIND(concat(substr(?timef,1,2),":" ,substr(?timef,4,2)) as ?timef2) .
+		BIND(concat(substr(?timet,1,2),":" ,substr(?timet,4,2)) as ?timet2) .
+		BIND(IF(?datef = ?datet, ?datet2, concat(?datef2,"-",?datet2)) as ?date_conc) .
+		BIND(concat(?date_conc, " ", ?timef2,"-",?timet2) as ?date_list).
+		BIND(REPLACE(STR(?s),"http://data.city.kobe.lg.jp/rdf/resource","https://data.city.kobe.lg.jp/eventdata/event") AS ?event_URL) .
+		BIND(CONCAT("<a href=\"",?event_URL,"\">",?name1,"</a>") as ?name) .
+		BIND(IF(?url="","",CONCAT("<BR><a href=\"",?url,"\">",?url,"</a>")) as ?url2) .
+		BIND(?pic_url as ?thumb_url) .
+	} 
+}LIMIT 100

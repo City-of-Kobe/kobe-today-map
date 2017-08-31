@@ -1,7 +1,7 @@
 PREFIX ic: <http://imi.go.jp/ns/core/rdf#>
 PREFIX schema: <http://schema.org/> 
-select distinct ?name concat(?desc2,"<BR>",?desc1, ?url2) as ?description ?pic_url ?thumb_url ?lon ?lat where{
-	select distinct ?name group_concat(?date_list ; separator='<BR>') as ?desc2 ?desc1 ?url2 ?pic_url ?thumb_url ?lon ?lat  where {
+select distinct ?name concat(?desc2,"<BR>",?desc1, ?url2) as ?description ?pic_url ?thumb_url ?lon ?lat ?icon_color where{
+	select distinct ?name group_concat(?date_list ; separator='<BR>') as ?desc2 ?desc1 ?url2 ?pic_url ?thumb_url ?lon ?lat ?icon_color where {
 		?s a ic:イベント型.
 		?s ic:名称/ic:表記 ?name1 .
 		?s ic:説明 ?desc1 .
@@ -23,5 +23,6 @@ select distinct ?name concat(?desc2,"<BR>",?desc1, ?url2) as ?description ?pic_u
 		BIND(CONCAT("<a href=\"",?event_URL,"\">",?name1,"</a>") as ?name) .
 		BIND(IF(?url="","",CONCAT("<BR><a href=\"",?url,"\">",?url,"</a>")) as ?url2) .
 		BIND(?pic_url as ?thumb_url) .
+		BIND(IF(xsd:date(?datef) <= xsd:date(now()) && xsd:date(now()) <= xsd:date(?datet),"R","G") as ?icon_color) .
 	} 
 }LIMIT 100
